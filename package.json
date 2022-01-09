@@ -13,7 +13,7 @@
 	"activationEvents": [
 		"onCommand:mom-i18n.text"
 	],
-	"main": "./out/extension.js",
+	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
@@ -21,6 +21,17 @@
 				"title": "mom i18n"
 			}
 		]
+	},
+	"scripts": {
+		"vscode:prepublish": "yarn run package",
+		"compile": "webpack",
+		"watch": "webpack --watch",
+		"package": "webpack --mode production --devtool hidden-source-map",
+		"compile-tests": "tsc -p . --outDir out",
+		"watch-tests": "tsc -p . -w --outDir out",
+		"pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.4",
@@ -30,13 +41,19 @@
 		"@typescript-eslint/eslint-plugin": "^5.1.0",
 		"@typescript-eslint/parser": "^5.1.0",
 		"@vscode/test-electron": "^1.6.2",
+		"clean-webpack-plugin": "^4.0.0",
 		"eslint": "^8.1.0",
 		"glob": "^7.1.7",
+		"html-webpack-plugin": "^5.5.0",
 		"json5": "^2.2.0",
 		"mocha": "^9.1.3",
 		"ts-loader": "^9.2.5",
 		"typescript": "^4.4.4",
 		"webpack": "^5.52.1",
 		"webpack-cli": "^4.8.0"
+	},
+	"dependencies": {
+		"axios": "^0.24.0",
+		"vue": "^3.2.26"
 	}
 }

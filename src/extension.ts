@@ -1,8 +1,10 @@
+import { ExtensionContext } from 'vscode';
 /* eslint-disable @typescript-eslint/semi */
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as vscode from 'vscode';
 import { resolve } from 'path';
 import * as fs from 'fs'
+import View from './view';
 
 enum command {
 	toggle = 'mom-i18n.toggle',
@@ -15,6 +17,7 @@ let currentIndex = 0;
 let status: vscode.StatusBarItem;
 let rootPath: string;
 let localeObj: Record<string, any> = {}
+let view: vscode.WebviewPanel
 const recordPath: Record<string, string> = {}
 const decList: vscode.TextEditorDecorationType[] = []
 
@@ -37,9 +40,18 @@ const active = vscode.commands.registerCommand(command.text, async() => {
 	vscode.languages.registerHoverProvider('*', hover)
 });
 
-const edit = vscode.commands.registerCommand(command.edit, () => {
-	console.log('edit')
-})
+const edit = (ctx: ExtensionContext) => {
+	return vscode.commands.registerCommand(command.edit, async(detail) => {
+		view = await View.getpanel(ctx)
+		if (!view.visible) {
+			view.reveal()
+		}
+		view.webview.postMessage({
+			type: 'detail',
+			value: detail
+		})
+	})
+}
 
 const setRootPath = () => {
 	const editor = vscode.window.activeTextEditor;
@@ -90,7 +102,6 @@ const createDecorationType = (text: string) => {
 }
 
 const decText = () => {
-	console.log('%c 🌶 decText: ', 'font-size:20px;background-color: #93C0A4;color:#fff;');
 	const editor = vscode.window.activeTextEditor
 	if (!editor) {
 		return null
@@ -119,7 +130,11 @@ const decText = () => {
 }
 
 const createMarkdownTable = (key: string, obj: Record<string, string>) => {
-	const str = `|${key}|[↗️](command:${command.edit})|
+	const str = `|${key}|[编辑](command:${command.edit}?${encodeURIComponent(JSON.stringify({
+		key,
+		locale: obj,
+		path: recordPath[key]
+	}))})|
 |:---:|----|
 |zh_cn|  ${obj['zh_CN']}  |
 |zh_tw|  ${obj['zh_TW']}  |
@@ -140,11 +155,6 @@ const hover: vscode.HoverProvider = {
 			if (hoverWord) {
 				const obj = localeObj[hoverWord]
 				if (!obj) return null
-				// const markdown = new vscode.MarkdownString(`### zh_cn: ${obj['zh_CN']}
-				// + zh_tw: ${obj['zh_TW']}
-				// + en: ${obj['en']}
-				// `, true)
-				// markdown.isTrusted = true
 				const markdown = createMarkdownTable(hoverWord, obj)
 				return new vscode.Hover(markdown)
 			}
@@ -156,7 +166,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(active);
 	context.subscriptions.push(status);
 	context.subscriptions.push(toggle)
-	context.subscriptions.push(edit)
+	context.subscriptions.push(edit(context))
 }
 
 // this method is called when your extension is deactivated
