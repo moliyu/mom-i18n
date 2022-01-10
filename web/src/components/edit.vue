@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="i18nWrapper">
     <div class="wrapper">
       <div class="title">I18nkey: {{key}}</div>
       <el-form label-width="100px">
@@ -53,7 +53,7 @@ const reset = () => {
 </script>
 
 <style scoped>
-.container {
+.i18nWrapper {
   width: 100vw;
   height: 100vh;
   display: flex;

@@ -4,7 +4,8 @@ export default createStore({
   state: {
     locale: {},
     key: '',
-    path: ''
+    path: '',
+    vscode: null
   },
   mutations: {
     SET_LOCALE(state, payload) {
@@ -15,6 +16,9 @@ export default createStore({
     },
     SET_PATH(state, path: string) {
       state.path = path
+    },
+    SET_INSTANCE(state, instance) {
+      state.vscode = instance
     }
   },
   actions: {

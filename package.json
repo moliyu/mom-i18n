@@ -2,7 +2,7 @@
 	"name": "mom-i18n",
 	"displayName": "mom-i18n",
 	"description": "",
-	"version": "0.0.1",
+	"version": "0.0.3",
 	"publisher": "zeyuzhang",
 	"engines": {
 		"vscode": "^1.63.0"
@@ -53,7 +53,9 @@
 		"webpack-cli": "^4.8.0"
 	},
 	"dependencies": {
+		"@types/prettier": "^2.4.2",
 		"axios": "^0.24.0",
+		"prettier": "^2.5.1",
 		"vue": "^3.2.26"
 	}
 }

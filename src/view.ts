@@ -24,7 +24,7 @@ async function getWebViewContent(context: ExtensionContext|null, templatePath: s
 class View {
   public static panel: WebviewPanel | null
   static _ctx: ExtensionContext
-  public static async getpanel(ctx: ExtensionContext) {
+  public static async getpanel(ctx: ExtensionContext, handleEvent: (e: any) => void) {
     this._ctx = ctx
     if (!this.panel) {
       this.panel = createWebviewPanel('test', 'i18n', {
@@ -33,8 +33,10 @@ class View {
         enableScripts: true,
         retainContextWhenHidden: true,
       })
-      const html = await getWebViewContent(null, 'http://localhost:8080/')
+      const html = await getWebViewContent(ctx, 'dist/webview/index.html')
+      // const html = await getWebViewContent(null, 'http://localhost:8080/')
       this.panel.webview.html = html
+      this.panel.webview.onDidReceiveMessage(event => handleEvent(event))
     }
     this.panel.onDidDispose(() => {
       this.panel = null

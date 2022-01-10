@@ -1,10 +1,13 @@
 <template>
-  <div class="container">
+  <div class="i18nWrapper">
     <div class="wrapper">
-      <div class="title">I18nkey: {{key}}</div>
+      <div class="title">新增国际化</div>
       <el-form label-width="100px">
         <el-form-item label="路径">
-          {{path}}
+          <el-input v-model="p"></el-input>
+        </el-form-item>
+        <el-form-item label="i18nKey">
+          <el-input v-model="k"></el-input>
         </el-form-item>
         <el-form-item
         v-for="(item, i) in Object.keys(state)"
@@ -23,26 +26,31 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watchEffect } from 'vue';
+import { computed, onMounted, ref, watchEffect } from 'vue';
 import { useStore } from 'vuex';
 const state = ref<Record<string, any>>({})
 
 const store = useStore()
 const locale = computed(() => store.state.locale)
-const key = computed(() => store.state.key)
-const path = computed(() => store.state.path)
 const vscode = computed(() => store.state.vscode)
+const p = ref('')
+const k = ref('')
 watchEffect(() => {
   state.value = JSON.parse(JSON.stringify(locale.value))
+})
+onMounted(() => {
+  const { key, path } = store.state
+  p.value = path
+  k.value = key
 })
 const confirm = () => {
   // @ts-ignore
   vscode.value.postMessage({
-    type: 'edit',
+    type: 'add',
     value: {
-      key: key.value,
+      key: k.value,
       locale: { ...state.value },
-      path: path.value
+      path: p.value
     }
   })
 }
@@ -53,9 +61,9 @@ const reset = () => {
 </script>
 
 <style scoped>
-.container {
-  width: 100vw;
-  height: 100vh;
+.i18nWrapper {
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
