@@ -36,12 +36,10 @@ const vscode = computed(() => store.state.vscode)
 const p = ref('')
 const k = ref('')
 watchEffect(() => {
-  state.value = JSON.parse(JSON.stringify(locale.value))
-})
-onMounted(() => {
-  const { key, path } = store.state
+  const { key, path, locale } = store.state
   p.value = path
   k.value = key
+  state.value = JSON.parse(JSON.stringify(locale))
 })
 const confirm = () => {
   // @ts-ignore

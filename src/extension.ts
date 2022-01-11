@@ -61,12 +61,13 @@ const add = (ctx: ExtensionContext) => {
 	return vscode.commands.registerCommand(command.add, async({text}) => {
 		const editor = vscode.window.activeTextEditor
 		if (!editor) return
-		const path = editor.document.uri.path
+		const path = editor.document.uri.fsPath
 		const { dir, name } = parse(path)
-		const arr = dir.replace(rootPath + '/', '').split('/').slice(1)
-		const prefix = arr.length ? `locales/${arr[0]}/${arr.join('.')}` : `locales/${arr.join('.')}`
-		const suffix = `.${name}.js`
-		const filepath = prefix + suffix
+		const arr = dir.replace(rootPath, '').replace(/^[\/\\]/, '').replace(/\\/g, '/').split('/').slice(1)
+		const [first, ...other] = arr
+		const prefix = other.length ? `${first}/${other.join('.')}` : `${other.join('.')}`
+		const suffix = prefix ? `.${name}.js` : `${name}.js`
+		const filepath = 'locales/' + prefix + suffix
 		view = await View.getpanel(ctx, handleEvent)
 		if (!view.visible) {
 			view.reveal()
@@ -168,7 +169,7 @@ const setRootPath = () => {
 	if (resource.scheme === 'file') {
 		const folder = vscode.workspace.getWorkspaceFolder(resource);
 		if (folder) {
-			rootPath = folder.uri.fsPath
+			rootPath = resolve(folder.uri.fsPath)
 			localePath = resolve(rootPath, 'locales')
 			getLocales(localePath)
 		}
