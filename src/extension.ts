@@ -30,18 +30,18 @@ const toggle = vscode.commands.registerCommand(command.toggle, () => {
 	decText()
 })
 
-const active = vscode.commands.registerCommand(command.text, async() => {
-	vscode.window.showInformationMessage('i18n插件已启动');
-	status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
-	status.text = locale[currentIndex];
-	status.tooltip = '单击切换国际化语言显示';
-	status.show()
-	status.command = command.toggle
-	setRootPath()
-	decText()
-	vscode.window.onDidChangeActiveTextEditor(() => decText())
-	vscode.languages.registerHoverProvider('*', hover)
-});
+// const active = vscode.commands.registerCommand(command.text, async() => {
+// 	vscode.window.showInformationMessage('i18n插件已启动');
+// 	status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
+// 	status.text = locale[currentIndex];
+// 	status.tooltip = '单击切换国际化语言显示';
+// 	status.show()
+// 	status.command = command.toggle
+// 	setRootPath()
+// 	decText()
+// 	vscode.window.onDidChangeActiveTextEditor(() => decText())
+// 	vscode.languages.registerHoverProvider('*', hover)
+// });
 
 const edit = (ctx: ExtensionContext) => {
 	return vscode.commands.registerCommand(command.edit, async(detail) => {
@@ -58,9 +58,11 @@ const edit = (ctx: ExtensionContext) => {
 }
 
 const add = (ctx: ExtensionContext) => {
-	return vscode.commands.registerCommand(command.add, async({text}) => {
+	return vscode.commands.registerCommand(command.add, async() => {
 		const editor = vscode.window.activeTextEditor
 		if (!editor) return
+		const { start, end } = editor.selection
+		const hoverWord = editor.document.getText(new vscode.Range(start, end))
 		const path = editor.document.uri.fsPath
 		const { dir, name } = parse(path)
 		const arr = dir.replace(rootPath, '').replace(/^[\/\\]/, '').replace(/\\/g, '/').split('/').slice(1)
@@ -76,7 +78,7 @@ const add = (ctx: ExtensionContext) => {
 			type: 'add',
 			value: {
 				locale: {
-					zh_CN: text,
+					zh_CN: hoverWord ?? '',
 					zh_TW: '',
 					en: ''
 				},
@@ -215,7 +217,7 @@ const decText = () => {
 	}
 	let doc = editor.document
 	let text = doc.getText()
-	const reg = /\$t\(['"](.*)['"]\)/g
+	const reg = /\$t\(['"](.*?)['"]\)/g
 	let match
 	while (decList.length) {
 		const dec = decList.shift()
@@ -265,22 +267,42 @@ const hover: vscode.HoverProvider = {
 	provideHover(document, position) {
 		const editor = vscode.window.activeTextEditor
 		if (editor) {
-			const { start, end } = editor.selection
-			const hoverWord = editor.document.getText(new vscode.Range(start, end))
-			if (hoverWord) {
-				const obj = localeObj[hoverWord]
-				if (obj) {
-					return new vscode.Hover(createMarkdownTable(hoverWord, obj))
-				} else {
-					return new vscode.Hover(createMarkdownAdd(hoverWord))
-				}
+			const reg = /\$t\(['"](.*?)['"]\)/g
+			const lineText = document.lineAt(position).text
+			const xpos = position.character
+			let match: RegExpExecArray | null
+			let hoverWord: string = '', obj
+			while (match = reg.exec(lineText)) {
+				hoverWord = match[1]
+				const start = match.index
+				const end = start + match[1].length - 2
+				obj = localeObj[hoverWord]
+				if (obj && start <= xpos && end >= xpos) {
+					break
+				} 
 			}
+			return new vscode.Hover(createMarkdownTable(hoverWord, obj))
+			// let m = reg.exec(lineText)
+			// const { start, end } = editor.selection
+			// const hoverWord = editor.document.getText(new vscode.Range(start, end))
+			// if (hoverWord) {
+			// }
 		}
 	}
 }
 
 export function activate(context: vscode.ExtensionContext) {
-	context.subscriptions.push(active);
+	vscode.window.showInformationMessage('i18n插件已启动');
+	status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
+	status.text = locale[currentIndex];
+	status.tooltip = '单击切换国际化语言显示';
+	status.show()
+	status.command = command.toggle
+	setRootPath()
+	decText()
+	vscode.window.onDidChangeActiveTextEditor(() => decText())
+	vscode.languages.registerHoverProvider('*', hover)
+	// context.subscriptions.push(active);
 	context.subscriptions.push(status);
 	context.subscriptions.push(toggle)
 	context.subscriptions.push(edit(context))
