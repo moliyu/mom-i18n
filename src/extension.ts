@@ -77,7 +77,7 @@ const add = (ctx: ExtensionContext) => {
 			value: {
 				locale: {
 					zh_CN: text,
-					zh_EN: '',
+					zh_TW: '',
 					en: ''
 				},
 				path: filepath,
