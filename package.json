@@ -2,7 +2,7 @@
 	"name": "mom-i18n",
 	"displayName": "mom-i18n",
 	"description": "",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"publisher": "zeyuzhang",
 	"engines": {
 		"vscode": "^1.52.0"
@@ -15,16 +15,30 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:mom-i18n.text"
+		"*"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "mom-i18n.text",
-				"title": "mom i18n"
+				"title": "i18n",
+				"category": "mom"
+			},
+			{
+				"command": "mom-i18n.add",
+				"title": "新增国际化",
+				"category": "mom"
 			}
-		]
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "mom-i18n.add",
+					"when": "editorHasSelection"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run package",
