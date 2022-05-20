@@ -217,7 +217,7 @@ const decText = () => {
 	}
 	let doc = editor.document
 	let text = doc.getText()
-	const reg = /\$t\(['"](.*?)['"]\)/g
+	const reg = /t\(['"](.*?)['"]\)/g
 	let match
 	while (decList.length) {
 		const dec = decList.shift()
@@ -225,8 +225,8 @@ const decText = () => {
 	}
 	while (match = reg.exec(text)) {
 		const localeKey = match[1]
-		const startPos = doc.positionAt(match.index + 4)
-		const endPos = doc.positionAt(match.index + 4 + match[1].length)
+		const startPos = doc.positionAt(match.index + 3)
+		const endPos = doc.positionAt(match.index + 3 + match[1].length)
 		const decorartion = {
 			range: new vscode.Range(startPos, endPos),
 		}
@@ -267,21 +267,19 @@ const hover: vscode.HoverProvider = {
 	provideHover(document, position) {
 		const editor = vscode.window.activeTextEditor
 		if (editor) {
-			const reg = /\$t\(['"](.*?)['"]\)/g
+			const reg = /t\(['"](.*?)['"]\)/g
 			const lineText = document.lineAt(position).text
-			const xpos = position.character
+			// const xpos = position.character
 			let match: RegExpExecArray | null
 			let hoverWord: string = '', obj
 			while (match = reg.exec(lineText)) {
 				hoverWord = match[1]
-				const start = match.index
-				const end = start + match[1].length - 2
+				// const start = match.index
+				// const end = start + match[1].length - 2
 				obj = localeObj[hoverWord]
-				if (obj && start <= xpos && end >= xpos) {
-					break
-				} 
+				if (hoverWord.includes(document.getText(document.getWordRangeAtPosition(position))))
+				return new vscode.Hover(createMarkdownTable(hoverWord, obj))
 			}
-			return new vscode.Hover(createMarkdownTable(hoverWord, obj))
 			// let m = reg.exec(lineText)
 			// const { start, end } = editor.selection
 			// const hoverWord = editor.document.getText(new vscode.Range(start, end))
